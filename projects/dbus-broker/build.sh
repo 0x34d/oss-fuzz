@@ -15,6 +15,12 @@
 #
 ################################################################################
 
+# fuzz-introspector isn't compatible with meson. Let's bail out explicitly here.
+# https://github.com/systemd/systemd/commit/ebd4541efe800190e5f158179f8201c654bb4c31
+if [[ "$SANITIZER" == introspector ]]; then
+    exit 1
+fi
+
 apt-get update -y
 
 if [[ "$ARCHITECTURE" == i386 ]]; then
@@ -23,9 +29,20 @@ else
     apt-get install -y pkg-config
 fi
 
+if [[ "$SANITIZER" == undefined ]]; then
+    additional_ubsan_checks=alignment
+    UBSAN_FLAGS="-fsanitize=$additional_ubsan_checks -fno-sanitize-recover=$additional_ubsan_checks"
+    CFLAGS+=" $UBSAN_FLAGS"
+    CXXFLAGS+=" $UBSAN_FLAGS"
+fi
+
 pip3 install meson ninja
 
-meson -Db_lundef=false -Dlauncher=false build
+if ! meson -Db_lundef=false -Dlauncher=false build; then
+    cat build/meson-logs/meson-log.txt
+    exit 1
+fi
+
 ninja -C ./build -v
 $CC $CFLAGS -c -o fuzz-message.o -Isrc -Isubprojects/libcstdaux-1/src -std=c11 -D_GNU_SOURCE "$SRC/fuzz-message.c"
 $CXX $CXXFLAGS -o "$OUT/fuzz-message" \
