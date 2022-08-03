@@ -1,3 +1,4 @@
+#!/bin/bash -eu
 # Copyright 2022 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,11 +14,11 @@
 # limitations under the License.
 #
 ################################################################################
-cd $SRC/pest/meta
-RUSTFLAGS="" cargo bootstrap
-cargo +nightly fuzz build
-cd $SRC/pest/grammars
-cargo +nightly fuzz build
-cp $SRC/pest/meta/fuzz/target/x86_64-unknown-linux-gnu/release/parser $OUT/
-cp $SRC/pest/grammars/fuzz/target/x86_64-unknown-linux-gnu/release/toml $OUT/
-cp $SRC/pest/grammars/fuzz/target/x86_64-unknown-linux-gnu/release/json $OUT/
+
+# Build and install project (using current CFLAGS, CXXFLAGS).
+pip3 install --upgrade pip
+pip3 install .
+
+for fuzzer in $(find $SRC -name 'fuzz_*.py'); do
+  compile_python_fuzzer $fuzzer
+done

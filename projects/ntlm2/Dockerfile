@@ -13,11 +13,10 @@
 # limitations under the License.
 #
 ################################################################################
-cd $SRC/pest/meta
-RUSTFLAGS="" cargo bootstrap
-cargo +nightly fuzz build
-cd $SRC/pest/grammars
-cargo +nightly fuzz build
-cp $SRC/pest/meta/fuzz/target/x86_64-unknown-linux-gnu/release/parser $OUT/
-cp $SRC/pest/grammars/fuzz/target/x86_64-unknown-linux-gnu/release/toml $OUT/
-cp $SRC/pest/grammars/fuzz/target/x86_64-unknown-linux-gnu/release/json $OUT/
+
+FROM gcr.io/oss-fuzz-base/base-builder-python
+
+RUN git clone https://github.com/dopstar/requests-ntlm2
+WORKDIR requests-ntlm2
+
+COPY build.sh fuzz_*.py $SRC/
