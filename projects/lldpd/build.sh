@@ -14,6 +14,12 @@
 # limitations under the License.
 #
 ################################################################################
+
+if [ "$SANITIZER" = undefined ]; then
+    export CFLAGS="$CFLAGS -fno-sanitize=unsigned-integer-overflow"
+    export CXXFLAGS="$CXXFLAGS -fno-sanitize=unsigned-integer-overflow"
+fi
+
 ./autogen.sh
 ./configure --disable-shared --enable-pie --enable-fuzzer=$LIB_FUZZING_ENGINE
 make
